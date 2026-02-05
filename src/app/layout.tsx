@@ -27,6 +27,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div className="border-y-2 border-[#E4E4E7] w-full flex items-center pl-8 py-2 ">
+          <h1 className="text-[#000000] text-[22px] font-semibold">AI tools</h1>
+        </div>
         {children}
       </body>
     </html>
