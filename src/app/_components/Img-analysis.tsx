@@ -1,151 +1,134 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Newspaper, RotateCw, Sparkles, Trash } from "lucide-react";
-import Image from "next/image";
+import { Label } from "@/components/ui/label";
+import { FileText, Loader2, RotateCw, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-const schema = z.object({
-  image: z
-    .any()
-    .refine(
-      (files) => files?.length === 1,
-      "Choose a file or drag & drop it here",
-    )
-    .refine(
-      (files) => ["image/jpeg", "image/png"].includes(files?.[0]?.type),
-      "JPG эсвэл PNG файл сонгоно уу",
-    ),
-});
+type Props = {
+  selectedFile: File | null;
+  imagePreview: string | null;
+  isLoading: boolean;
+  isModelLoading: boolean;
+  result: string | null;
 
-type FormValues = z.infer<typeof schema>;
+  onReset: () => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onGenerate: () => void;
+};
 
-export const ImgAnalysis = () => {
+export const ImgAnalysis = ({selectedFile,
+  imagePreview,
+  isLoading,
+  isModelLoading,
+  result,
+  onReset,
+  onFileChange,
+  onGenerate,
+}: Props)}) => {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-  });
 
   const removeImage = () => {
     if (uploadedImageUrl) {
       URL.revokeObjectURL(uploadedImageUrl);
     }
     setUploadedImageUrl("");
-    form.reset();
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
-  const onSubmit = (values: FormValues) => {
-    const file = values.image[0];
-    console.log(file);
-  };
 
   return (
-    <>
-      <div className="mt-2 w-145">
+    <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <Sparkles />
-            <h1 className="text-[#09090B] font-semibold text-[20px]">
-              Image analysis
-            </h1>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            <h2 className="text-xl font-semibold">Image analysis</h2>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-md cursor-pointer"
-            onClick={removeImage}
-          >
-            <RotateCw />
+          <Button variant="ghost" size="icon" onClick={onReset}>
+            <RotateCw className="h-4 w-4" />
           </Button>
         </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-3">
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#71717A] pt-2">
-                    Upload a food photo, and AI will detect the ingredients.
-                  </FormLabel>
-                  <FormControl>
-                    <div>
-                      <Input
-                        accept="image/jpeg,image/png"
-                        id="file-upload"
-                        placeholder="JPG, PNG"
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (!files || !files[0]) return;
-                          field.onChange(files);
-                          setUploadedImageUrl(URL.createObjectURL(files[0]));
-                        }}
-                      />
-                      {uploadedImageUrl && (
-                        <div className="relative w-50 h-36 border-2 border-gray-400 rounded-lg p-1 box-border overflow-hidden">
-                          <Image
-                            alt="Uploaded image"
-                            src={uploadedImageUrl}
-                            fill
-                            className="object-cover rounded-md"
-                          />
-                          <Button
-                            variant="outline"
-                            type="button"
-                            onClick={removeImage}
-                            className="border-2 border-gray-300 absolute bottom-2 right-3 w-6 h-6 cursor-pointer"
-                          >
-                            <Trash />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-24 h-12 bg-gray-200 hover:bg-gray-300 rounded-md text-[16px] cursor-pointer mt-3"
-              >
-                Generate
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-      <div className="mt-3 w-145">
-        <div className="flex gap-2">
-          <Newspaper />
-          <h1 className="text-[#09090B] font-semibold text-[20px]">
-            Here is the summary
-          </h1>
-        </div>
-        <p className="text-[#71717A] text-[14px]">
-          First, enter your image to recognize an ingredients...
+
+        <p className="text-sm text-muted-foreground">
+          Upload a food photo, and AI will detect the ingredients.
         </p>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Label
+                  htmlFor="file-upload"
+                  className="cursor-pointer text-sm font-medium"
+                >
+                  Choose File
+                </Label>
+
+                <span className="text-sm text-muted-foreground">
+                  {selectedFile ? selectedFile.name : "JPG , PNG"}
+                </span>
+
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  onChange={onFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {imagePreview && (
+                <div className="mt-4">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-h-64 rounded-lg object-contain"
+                  />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button
+            className="bg-zinc-800 hover:bg-zinc-700"
+            onClick={onGenerate}
+            disabled={!selectedFile || isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isModelLoading ? "Loading model..." : "Analyzing..."}
+              </>
+            ) : (
+              "Generate"
+            )}
+          </Button>
+        </div>
       </div>
-    </>
+
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">Here is the summary</h3>
+        </div>
+
+        {result ? (
+          <p className="text-sm text-foreground bg-muted p-4 rounded-lg">
+            {result}
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            First, enter your image to recognize an ingredients.
+          </p>
+        )}
+      </div>
+    </div>
   );
 };

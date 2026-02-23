@@ -11,8 +11,23 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function Home() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const captionerRef = useRef<any>(null);
+
+  const fileToDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   return (
     <div className="">
       <div className="flex justify-center mt-8">
