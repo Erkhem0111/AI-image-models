@@ -3,9 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Newspaper, RotateCw, Sparkles } from "lucide-react";
+import { FileText, Newspaper, RotateCw, Sparkles } from "lucide-react";
+import { int } from "zod";
 
-export const Ingredient = () => {
+interface IngredientProps {
+  foodText: string;
+  ingLoading: boolean;
+  ingModelLoading: boolean;
+  ingResult: string | null;
+  onChange: (text: string) => void;
+  onReset: () => void;
+  onGenerate: () => void;
+}
+
+export const Ingredient = (props: IngredientProps) => {
   return (
     <>
       <div className="mt-2 w-145">
@@ -20,35 +31,48 @@ export const Ingredient = () => {
             type="reset"
             variant="outline"
             className="rounded-md cursor-pointer"
+            onClick={props.onReset}
           >
             <RotateCw />
           </Button>
         </div>
-        <div className="mt-4 flex flex-col items-end">
-          <Field>
-            <FieldLabel className="text-[#71717A]">
-              Describe the food, and AI will detect the ingredients.
-            </FieldLabel>
-            <Input className="h-10" placeholder="Орц тодорхойлох" />
-          </Field>
+        <p className="text-sm text-muted-foreground">
+          Describe the food, and AI will detect the ingredients.
+        </p>
+
+        <div className="rounded-lg border border-gray-200 bg-white mt-2">
+          <textarea
+            value={props.foodText}
+            onChange={(e) => props.onChange(e.target.value)}
+            placeholder="Орц тодорхойлох"
+            className="h-42 w-full resize-none rounded-lg bg-transparent p-4 text-base outline-none placeholder:text-gray-400"
+          />
+        </div>
+        <div className="mt-4 flex justify-end">
           <Button
-            variant="outline"
-            className="w-22 h-12 bg-gray-200 hover:bg-gray-300 rounded-md text-[16px] cursor-pointer mt-3"
+            className="bg-zinc-800 hover:bg-zinc-700"
+            onClick={props.onGenerate}
+            disabled={!props.foodText.trim() || props.ingLoading}
           >
             Generate
           </Button>
         </div>
       </div>
-      <div className="mt-3 w-145">
-        <div className="flex gap-2">
-          <Newspaper />
-          <h1 className="text-[#09090B] font-semibold text-[20px]">
-            Identified Ingredients
-          </h1>
+      <div className="space-y-2 pt-2">
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">Identified Ingredients</h3>
         </div>
-        <h1 className="text-[#71717A] text-[14px]">
-          First, enter your text to recognize an ingredients.
-        </h1>
+
+        {props.ingResult ? (
+          <pre className="text-sm text-foreground bg-muted p-4 rounded-lg whitespace-pre-wrap">
+            {props.ingResult}
+          </pre>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            First, enter your text to recognize an ingredients.
+          </p>
+        )}
       </div>
     </>
   );
